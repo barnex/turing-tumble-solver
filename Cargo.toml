@@ -1,0 +1,7 @@
+[package]
+name = "magnus"
+version = "42.0.0"
+edition = "2018"
+
+[profile.release]
+debug = 1
