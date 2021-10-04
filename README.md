@@ -66,7 +66,7 @@ I have implemented such solver as a Rust module named `alia` (after the fictiona
 
 Puzzles are specified by the number of bits allowed to be used, and test function that tells whether a proposed solution is correct. E.g. for the 4-bit counter shown earlier, the Puzzle Book specifies: "Count the number of blue balls in register A. Use 15 or fewer balls." This translates to:
 
-```
+```rust
 alia::solve_bits(               // only "bits" allowed, no gear bits
     &State::new(4),             // 4 instructions can be used
     &[B],                       // Only Blue balls can be used, no red balls or interceptors
@@ -80,13 +80,13 @@ alia::solve_bits(               // only "bits" allowed, no gear bits
 })
 ```
 
-It finds the 4-bit counter program shown above in about 100 microseconds.
+The solver finds the 4-bit counter program shown above in about 100 microseconds.
 
-As a more challenging puzzle that is not in the Puzzle Book, I searched for a program that outputs 1 blue, 2 red, 3 blue, 4 red and 5 blue balls.
+As a more challenging puzzle that is not in the Puzzle Book, I searched for a program that outputs 1 blue, 2 red, 3 blue, 4 red and 5 blue balls using up to 6 bits.
 
 The specification reads:
 
-```
+```rust
 alia::solve_bits(&State::new(6).with_balls([9, 6]), &[B, R], |p| {
     p.clone().run().out_seq.eq(&[
         Blue, Red, Red, Blue, Blue, Blue, Red, Red, Red, Red, Blue, Blue, Blue, Blue, Blue,

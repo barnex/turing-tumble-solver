@@ -1,5 +1,9 @@
 use crate::*;
 
+/// Solve starting from an initial board state until `test` returns true.
+/// Bits and gear bits can be used in the solution.
+/// `ext_addr` specifies which special addresses can be used. E.g.:
+///     [BLUE_LEVER, INTERC0, INTERC1]
 pub fn solve_gear<F>(init: &State, ext_addr: &[Addr], test: F)
 where
     F: Fn(&State) -> bool,
@@ -15,7 +19,7 @@ where
     }
 }
 
-pub fn visit_instr<F>(p: &State, ext_addr: &[Addr], test: F)
+fn visit_instr<F>(p: &State, ext_addr: &[Addr], test: F)
 where
     F: Fn(&State),
 {
@@ -30,9 +34,6 @@ where
 {
     let jmp_targets = ((instr_addr + 1)..=max_instr).chain(ext_addr.iter().copied());
 
-    //let min_mem_addr = u8::max(0, instr_addr - 1); // gear
-    //let mem = [0, p.mem[max(0, instr_addr)]]
-
     let mut mem_addr = [instr_addr, 255];
     let mem_addr = if instr_addr == 0 {
         &mem_addr[..1]
@@ -41,7 +42,7 @@ where
         &mem_addr
     };
 
-    for mem in [instr_addr] {
+    for &mem in mem_addr {
         for jmp0 in jmp_targets.clone() {
             for jmp1 in jmp_targets.clone() {
                 p.instr[instr_addr as usize] = ijmp(mem, jmp0, jmp1);
@@ -55,6 +56,7 @@ where
     }
 }
 
+/// Like `solve_gear`, but not allowed to use any gear bits, only regular bits.
 pub fn solve_bits<F>(init: &State, ext_addr: &[Addr], test: F)
 where
     F: Fn(&State) -> bool,
@@ -74,8 +76,6 @@ where
     }
     println!("{} candidates tried", count);
 }
-
-//fn print_if_pass()
 
 fn entrypoints(n_instr: u8, ext_addr: &[Addr]) -> Vec<[Addr; 2]> {
     let entry_b = (0..n_instr).into_iter().chain(ext_addr.iter().copied());
@@ -129,71 +129,35 @@ mod test {
     #[test]
     fn visit_jmp1() {
         let mut p = State::new(1);
-
         let ext_addr = [BLUE_LEVER, RED_LEVER, INTERC0];
         let count = Counter::new();
         visit_jmp01(&mut p, &ext_addr, |_| count.inc());
-        // for (i, p) in collect.iter().enumerate(){
-        //     println!("{}: {:?}", i, p.instr);
-        // }
         assert_eq!(count.get(), 9); // 3x3 ext_addr, no next instr
     }
 
     #[test]
     fn visit_jmp2() {
         let mut p = State::new(2);
-
         let ext_addr = [BLUE_LEVER];
         let count = Counter::new();
         visit_jmp01(&mut p, &ext_addr, |_| count.inc());
-        // for (i, p) in collect.iter().enumerate(){
-        //     println!("{}: {:?}", i, p.instr);
-        // }
         assert_eq!(count.get(), 4); // instr0: 11,1B,B1,BB, instr1: BB
     }
     #[test]
     fn visit_jmp3() {
         let mut p = State::new(3);
-
         let ext_addr = [BLUE_LEVER];
         let count = Counter::new();
         visit_jmp01(&mut p, &ext_addr, |_| count.inc());
-        //for (i, p) in collect.iter().enumerate() {
-        //    println!("{}: {:?}", i, p.instr);
-        //}
         assert_eq!(count.get(), 36); // (3!)^2
     }
 
     #[test]
     fn visit_instr2() {
-        use std::cell::RefCell;
-
         let mut p = State::new(2);
-
         let ext_addr = [BLUE_LEVER];
-        //let count = Counter::new();
-        let collect: RefCell<Vec<State>> = RefCell::new(vec![]);
-        //visit_instr(&mut p, &ext_addr, |_| count.inc());
-        visit_instr(&mut p, &ext_addr, |p| collect.borrow_mut().push(p.clone()));
-        let collect = collect.take();
-        for (i, p) in collect.iter().enumerate() {
-            println!("{}: {:?}", i, p.instr);
-        }
-        //assert_eq!(count.get(), 4); // instr0: 11,1B,B1,BB, instr1: BB
+        let count = Counter::new();
+        visit_instr(&mut p, &ext_addr, |_| count.inc());
+        assert_eq!(count.get(), 4); // instr0: 11,1B,B1,BB, instr1: BB
     }
-
-    //#[test]
-    //fn test_entrypoints() {
-    //    let B = BLUE_LEVER;
-    //    let R = RED_LEVER;
-    //    dbg!(entrypoints(0, &[B]));
-    //    dbg!(entrypoints(0, &[B, R]));
-    //    dbg!(entrypoints(0, &[B, R, INTERC0]));
-    //    dbg!(entrypoints(1, &[B]));
-    //    dbg!(entrypoints(1, &[B, R]));
-    //    dbg!(entrypoints(1, &[B, R, INTERC0]));
-    //    dbg!(entrypoints(2, &[B]));
-    //    dbg!(entrypoints(3, &[B]));
-    //    dbg!(entrypoints(4, &[]));
-    //}
 }

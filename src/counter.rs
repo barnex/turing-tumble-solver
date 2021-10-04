@@ -1,6 +1,8 @@
 use std::cell::Cell;
 use std::fmt;
 
+/// A performance counter, used only to show
+/// how many candidate programs were searched.
 #[derive(Default)]
 pub struct Counter(Cell<u64>);
 

@@ -2,6 +2,7 @@ use super::*;
 use core::fmt;
 use std::ops::Range;
 
+/// A complete board state: input balls, the program, output sequence, ...
 #[derive(Clone, Default, Debug)]
 pub struct State {
     /// number of blue, red balls at the top of the board.
